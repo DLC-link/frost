@@ -1,5 +1,9 @@
 //! Serialization support.
 
+#[cfg(feature = "serialization")]
+use alloc::vec::Vec;
+
+#[cfg(feature = "serde")]
 use crate::{Ciphersuite, Error, Field, Group};
 
 #[cfg(feature = "serde")]
@@ -89,6 +93,7 @@ where
 
 // The short 4-byte ID. Derived as the CRC-32 of the UTF-8
 // encoded ID in big endian format.
+#[cfg(feature = "serde")]
 const fn short_id<C>() -> [u8; 4]
 where
     C: Ciphersuite,
@@ -172,7 +177,7 @@ pub(crate) trait Deserialize<C: Ciphersuite> {
     /// Deserialize the struct from a slice of bytes.
     fn deserialize(bytes: &[u8]) -> Result<Self, Error<C>>
     where
-        Self: std::marker::Sized;
+        Self: core::marker::Sized;
 }
 
 #[cfg(feature = "serialization")]
