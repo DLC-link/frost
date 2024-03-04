@@ -44,7 +44,7 @@ pub fn repair_share_step_2(deltas_j: &[Scalar]) -> Scalar {
 /// Step 3 of RTS
 ///
 /// The `participant` sums all `sigma_j` received to compute the `share`. The `SecretShare`
-/// is made up of the `identifier`and `commitment` of the `participant` as well as the
+/// is made up of the `identifier` and `commitment` of the `participant` as well as the
 /// `value` which is the `SigningShare`.
 pub fn repair_share_step_3(
     sigmas: &[Scalar],

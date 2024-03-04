@@ -8,6 +8,7 @@ pub mod coefficient_commitment;
 pub mod helpers;
 pub mod proptests;
 pub mod repairable;
+pub mod resharing;
 pub mod vectors;
 pub mod vectors_dkg;
 pub mod vss_commitment;

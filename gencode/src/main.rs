@@ -24,6 +24,7 @@ use std::{
     env, fs,
     io::Write,
     iter::zip,
+    path::Path,
     process::{Command, ExitCode, Stdio},
 };
 
@@ -53,9 +54,12 @@ use regex::Regex;
 /// # Returns
 ///
 /// A list with data for each item, see above.
-fn read_docs(filename: &str, suite_strings: &[&str]) -> Vec<(String, String, usize, usize)> {
+fn read_docs(
+    filename: impl AsRef<Path>,
+    suite_strings: &[&str],
+) -> Vec<(String, String, usize, usize)> {
     let mut docs = Vec::new();
-    let code = fs::read_to_string(filename).unwrap();
+    let code = fs::read_to_string(&filename).unwrap();
     let re = Regex::new(concat!(
         // Enable multi-line (makes "^" match start of line)
         r"(?m)",
@@ -106,12 +110,12 @@ fn read_docs(filename: &str, suite_strings: &[&str]) -> Vec<(String, String, usi
 ///     for each reference in `original_suite_strings`.
 fn write_docs(
     docs: &[(String, String, usize, usize)],
-    filename: &str,
+    filename: impl AsRef<Path>,
     original_suite_strings: &[&str],
     new_suite_strings: &[&str],
 ) -> u8 {
-    let old_docs = read_docs(filename, new_suite_strings);
-    let mut code = fs::read_to_string(filename).unwrap();
+    let old_docs = read_docs(&filename, new_suite_strings);
+    let mut code = fs::read_to_string(&filename).unwrap();
     let original_code = code.clone();
 
     // Map documentations by their identifiers
@@ -192,15 +196,17 @@ fn main() -> ExitCode {
     let mut replaced = 0;
     let check = args.len() == 2 && args[1] == "--check";
 
-    // Copy the frost-core repairable docs into ristretto255.
+    // Copy the frost-core repairable and resharing docs into ristretto255.
     // This will then be copied later down into the other ciphersuites.
-    let repairable_docs = read_docs("frost-core/src/keys/repairable.rs", &[]);
-    replaced |= write_docs(
-        &repairable_docs,
-        "frost-ristretto255/src/keys/repairable.rs",
-        &[],
-        &[],
-    );
+    for module_name in ["repairable", "resharing"] {
+        let docs = read_docs(format!("frost-core/src/keys/{}.rs", module_name), &[]);
+        replaced |= write_docs(
+            &docs,
+            format!("frost-ristretto255/src/keys/{}.rs", module_name),
+            &[],
+            &[],
+        );
+    }
 
     // Generate code or copy docs for other ciphersuites, using
     // ristretto255 as the canonical base.
@@ -322,6 +328,7 @@ fn main() -> ExitCode {
             "dkg.md",
             "src/keys/dkg.rs",
             "src/keys/repairable.rs",
+            "src/keys/resharing.rs",
             "src/tests/batch.rs",
             "src/tests/coefficient_commitment.rs",
             "src/tests/proptests.rs",
